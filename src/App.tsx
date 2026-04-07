@@ -1,6 +1,8 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import './App.css';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 type Stage = 'camera' | 'preview' | 'loading' | 'ready' | 'result' | 'error';
 
 export default function App() {
@@ -89,7 +91,7 @@ export default function App() {
       const formData = new FormData();
       formData.append('image', blob, 'photo.jpg');
 
-      const res = await fetch('/api/advice', { method: 'POST', body: formData });
+      const res = await fetch(`${API_URL}/api/advice`, { method: 'POST', body: formData });
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
@@ -97,7 +99,7 @@ export default function App() {
       }
 
       const data = await res.json();
-      setResultImage(data.imageUrl || null);
+      setResultImage(data.imageUrl ? `${API_URL}${data.imageUrl}` : null);
       setResultIsVideo(typeof data.contentType === 'string' && data.contentType.startsWith('video/'));
       setResultText(data.text || null);
       setStage('ready');
@@ -117,7 +119,7 @@ export default function App() {
 
     if (email.trim() && resultImage) {
       try {
-        await fetch('/api/advice/send-email', {
+        await fetch(`${API_URL}/api/advice/send-email`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
