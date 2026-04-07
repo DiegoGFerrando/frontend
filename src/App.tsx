@@ -1,0 +1,258 @@
+import { useRef, useState, useCallback, useEffect } from 'react';
+import './App.css';
+
+type Stage = 'camera' | 'preview' | 'loading' | 'ready' | 'result' | 'error';
+
+export default function App() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const [stage, setStage] = useState<Stage>('camera');
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [resultImage, setResultImage] = useState<string | null>(null);
+  const [resultIsVideo, setResultIsVideo] = useState(false);
+  const [resultText, setResultText] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const startCamera = useCallback(async () => {
+    setError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1024 }, height: { ideal: 1024 } },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setStage('camera');
+    } catch {
+      setError('Could not access camera. Please allow camera permissions.');
+    }
+  }, []);
+
+  // Auto-start camera on mount + attach stream when video element mounts
+  useEffect(() => {
+    startCamera();
+  }, [startCamera]);
+
+  useEffect(() => {
+    if (stage === 'camera' && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [stage]);
+
+  const stopCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  }, []);
+
+  const takePhoto = useCallback(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    // Crop to 1:1 aspect ratio (matching the viewport)
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    const size = Math.min(vw, vh);
+    const sx = (vw - size) / 2;
+    const sy = (vh - size) / 2;
+
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    setPhoto(dataUrl);
+    stopCamera();
+    setStage('preview');
+  }, [stopCamera]);
+
+  const retake = useCallback(() => {
+    setPhoto(null);
+    setResultImage(null);
+    setResultIsVideo(false);
+    setResultText(null);
+    startCamera();
+  }, [startCamera]);
+
+  const sendPhoto = useCallback(async () => {
+    if (!photo) return;
+    setStage('loading');
+    setError(null);
+
+    try {
+      const blob = await (await fetch(photo)).blob();
+      const formData = new FormData();
+      formData.append('image', blob, 'photo.jpg');
+
+      const res = await fetch('/api/advice', { method: 'POST', body: formData });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message ?? `Server error ${res.status}`);
+      }
+
+      const data = await res.json();
+      setResultImage(data.imageUrl || null);
+      setResultIsVideo(typeof data.contentType === 'string' && data.contentType.startsWith('video/'));
+      setResultText(data.text || null);
+      setStage('ready');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setStage('error');
+    }
+  }, [photo]);
+
+  const revealResult = useCallback(async () => {
+    if (!email.trim()) {
+      setError('Please enter your email before continuing.');
+      return;
+    }
+    setError(null);
+    setStage('result');
+
+    if (email.trim() && resultImage) {
+      try {
+        await fetch('/api/advice/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.trim(),
+            imageUrl: resultImage,
+            contentType: resultIsVideo ? 'video/mp4' : 'image/jpeg',
+          }),
+        });
+      } catch {
+        // Email send failure is non-blocking
+      }
+    }
+  }, [email, resultImage, resultIsVideo]);
+
+  const reset = useCallback(() => {
+    setPhoto(null);
+    setResultImage(null);
+    setResultIsVideo(false);
+    setResultText(null);
+    setEmail('');
+    setError(null);
+    startCamera();
+  }, [startCamera]);
+
+  return (
+    <div className="app">
+      <div className="header">
+        <img src="/logo.jpg" alt="Advice EdTech" className="logo" />
+        <h1>Advice EdTech</h1>
+      </div>
+
+      {/* Viewport */}
+      <div className="camera-container">
+        {stage === 'camera' && (
+          <>
+            <video ref={videoRef} autoPlay playsInline muted />
+            <canvas ref={canvasRef} />
+          </>
+        )}
+
+        {stage === 'preview' && photo && (
+          <img src={photo} alt="Captured" />
+        )}
+
+        {(stage === 'loading' || stage === 'ready') && (
+          <video
+            src="/video.mp4"
+            autoPlay
+            playsInline
+          />
+        )}
+
+        {stage === 'result' && resultImage && (
+          resultIsVideo ? (
+            <video src={resultImage} autoPlay loop playsInline controls />
+          ) : (
+            <img src={resultImage} alt="Transformed" />
+          )
+        )}
+      </div>
+
+      {/* Email input */}
+      {(stage === 'loading' || stage === 'ready') && (
+        <div className="email-input-row">
+          <input
+            type="email"
+            className="email-input"
+            placeholder="Enter your email to receive the result"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); setError(null); }}
+          />
+          {stage === 'ready' && error && (
+            <p style={{ color: '#ff5252', margin: '0.25rem 0 0', fontSize: '0.85rem' }}>{error}</p>
+          )}
+        </div>
+      )}
+
+      {/* Loading bar */}
+      {(stage === 'loading' || stage === 'ready') && (
+        <div className="progress-bar-container">
+          <div className={`progress-bar-fill ${stage === 'ready' ? 'complete' : ''}`} />
+        </div>
+      )}
+
+      {/* Error */}
+      {stage === 'error' && error && (
+        <>
+          <div className="result-card">
+            <p>{error}</p>
+            {/* <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>Please try again.</p> */}
+          </div>
+          <button className="btn btn-primary" onClick={reset}>
+            Try Again
+          </button>
+        </>
+      )}
+
+      {/* Controls */}
+      {stage === 'camera' && (
+        <button className="btn btn-primary" onClick={takePhoto}>
+          📷 Take Photo
+        </button>
+      )}
+
+      {stage === 'preview' && (
+        <>
+          <div className="button-row">
+            <button className="btn btn-secondary" onClick={retake}>Retake</button>
+            <button className="btn btn-primary" onClick={sendPhoto}>Transform ✨</button>
+          </div>
+        </>
+      )}
+
+      {stage === 'loading' && (
+        <p style={{ color: 'var(--text-muted)' }}>AI is transforming your photo...</p>
+      )}
+
+      {stage === 'ready' && (
+        <button className="btn btn-primary" onClick={revealResult}>
+          See the picture
+        </button>
+      )}
+
+      {stage === 'result' && (
+        <>
+          {resultText && (
+            <div className="result-card">
+              <p>{resultText}</p>
+            </div>
+          )}
+          <div className="button-row">
+            <button className="btn btn-secondary" onClick={reset}>Try Again</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

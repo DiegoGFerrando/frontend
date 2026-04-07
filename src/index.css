@@ -1,0 +1,40 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0a0a14;
+  --surface: #12122a;
+  --surface-border: rgba(0, 255, 255, 0.08);
+  --primary: #00e5ff;
+  --primary-hover: #00b8d4;
+  --accent: #b000ff;
+  --neon-pink: #ff00aa;
+  --neon-blue: #00e5ff;
+  --neon-purple: #b000ff;
+  --text: #e0e8ff;
+  --text-muted: #7a88aa;
+  --radius: 14px;
+  --glow-cyan: 0 0 10px rgba(0, 229, 255, 0.4), 0 0 40px rgba(0, 229, 255, 0.15);
+  --glow-pink: 0 0 10px rgba(255, 0, 170, 0.4), 0 0 40px rgba(255, 0, 170, 0.15);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(176, 0, 255, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 229, 255, 0.06) 0%, transparent 60%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
