@@ -23,6 +23,7 @@
   border: 2px solid var(--neon-cyan, var(--primary));
   box-shadow: var(--glow-cyan);
   object-fit: cover;
+  background-color: #ffffff;
 }
 
 .app h1 {

@@ -153,7 +153,7 @@ export default function App() {
   return (
     <div className="app">
       <div className="header">
-        <img src="/logo.jpg" alt="Advice EdTech" className="logo" />
+        <img src="/logo.png" alt="Advice EdTech" className="logo" />
         <h1>Advice EdTech</h1>
       </div>
 
