@@ -13,6 +13,7 @@ export default function App() {
   const [stage, setStage] = useState<Stage>('camera');
   const [photo, setPhoto] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
+  const [resultImagePath, setResultImagePath] = useState<string | null>(null);
   const [resultIsVideo, setResultIsVideo] = useState(false);
   const [resultText, setResultText] = useState<string | null>(null);
   const [email, setEmail] = useState('');
@@ -76,8 +77,11 @@ export default function App() {
   const retake = useCallback(() => {
     setPhoto(null);
     setResultImage(null);
+    setResultImagePath(null);
     setResultIsVideo(false);
     setResultText(null);
+    setEmail('');
+    setError(null);
     startCamera();
   }, [startCamera]);
 
@@ -99,6 +103,7 @@ export default function App() {
       }
 
       const data = await res.json();
+      setResultImagePath(data.imageUrl || null);
       setResultImage(data.imageUrl ? `${API_URL}${data.imageUrl}` : null);
       setResultIsVideo(typeof data.contentType === 'string' && data.contentType.startsWith('video/'));
       setResultText(data.text || null);
@@ -117,14 +122,14 @@ export default function App() {
     setError(null);
     setStage('result');
 
-    if (email.trim() && resultImage) {
+    if (email.trim() && resultImagePath) {
       try {
         await fetch(`${API_URL}/api/advice/send-email`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: email.trim(),
-            imageUrl: resultImage,
+            imageUrl: resultImagePath,
             contentType: resultIsVideo ? 'video/mp4' : 'image/jpeg',
           }),
         });
@@ -132,11 +137,12 @@ export default function App() {
         // Email send failure is non-blocking
       }
     }
-  }, [email, resultImage, resultIsVideo]);
+  }, [email, resultImagePath, resultIsVideo]);
 
   const reset = useCallback(() => {
     setPhoto(null);
     setResultImage(null);
+    setResultImagePath(null);
     setResultIsVideo(false);
     setResultText(null);
     setEmail('');
