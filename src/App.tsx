@@ -31,7 +31,7 @@ export default function App() {
       }
       setStage('camera');
     } catch {
-      setError('Could not access camera. Please allow camera permissions.');
+      setError('No se pudo acceder a la cámara. Por favor, permití el acceso.');
     }
   }, []);
 
@@ -109,14 +109,14 @@ export default function App() {
       setResultText(data.text || null);
       setStage('ready');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : 'Algo salió mal');
       setStage('error');
     }
   }, [photo]);
 
   const revealResult = useCallback(async () => {
     if (!email.trim()) {
-      setError('Please enter your email before continuing.');
+      setError('Por favor, ingresá tu email antes de continuar.');
       return;
     }
     setError(null);
@@ -193,7 +193,7 @@ export default function App() {
           <input
             type="email"
             className="email-input"
-            placeholder="Enter your email to receive the result"
+            placeholder="Ingresá tu email para recibir el resultado"
             value={email}
             onChange={(e) => { setEmail(e.target.value); setError(null); }}
           />
@@ -218,7 +218,7 @@ export default function App() {
             {/* <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>Please try again.</p> */}
           </div>
           <button className="btn btn-primary" onClick={reset}>
-            Try Again
+            Intentar de nuevo
           </button>
         </>
       )}
@@ -226,26 +226,26 @@ export default function App() {
       {/* Controls */}
       {stage === 'camera' && (
         <button className="btn btn-primary" onClick={takePhoto}>
-          📷 Take Photo
+          📷 Tomar foto
         </button>
       )}
 
       {stage === 'preview' && (
         <>
           <div className="button-row">
-            <button className="btn btn-secondary" onClick={retake}>Retake</button>
-            <button className="btn btn-primary" onClick={sendPhoto}>Transform ✨</button>
+            <button className="btn btn-secondary" onClick={retake}>Repetir</button>
+            <button className="btn btn-primary" onClick={sendPhoto}>Transformar ✨</button>
           </div>
         </>
       )}
 
       {stage === 'loading' && (
-        <p style={{ color: 'var(--text-muted)' }}>AI is transforming your photo...</p>
+        <p style={{ color: 'var(--text-muted)' }}>La IA está transformando tu foto...</p>
       )}
 
       {stage === 'ready' && (
         <button className="btn btn-primary" onClick={revealResult}>
-          See the picture
+          Ver la imagen
         </button>
       )}
 
@@ -257,7 +257,7 @@ export default function App() {
             </div>
           )}
           <div className="button-row">
-            <button className="btn btn-secondary" onClick={reset}>Try Again</button>
+            <button className="btn btn-secondary" onClick={reset}>Intentar de nuevo</button>
           </div>
         </>
       )}
