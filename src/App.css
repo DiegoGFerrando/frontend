@@ -166,11 +166,22 @@
 }
 
 /* ── Split layout (loading/ready stage) ── */
+
+/* Landscape: much larger horizontal gap, larger vertical gap in split-right */
 .split-layout {
   display: flex;
-  gap: 2.5rem;
+  gap: 7.5rem;
   width: 100%;
   align-items: stretch;
+}
+
+.split-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3rem;
 }
 
 .split-left {
@@ -212,12 +223,14 @@
   }
 }
 
-@media (max-width: 768px) {
+
+@media (max-width: 768px), (orientation: portrait) {
   .app {
     max-width: 640px;
   }
   .split-layout {
     flex-direction: column;
+    gap: 2.5rem;
   }
   .split-right {
     gap: 1.5rem;
