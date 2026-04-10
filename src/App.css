@@ -1,6 +1,6 @@
 /* ── Layout ── */
 .app {
-  max-width: 640px;
+  max-width: 960px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -163,6 +163,39 @@
   width: 100%;
   height: 100%;
   border: none;
+}
+
+/* ── Split layout (loading/ready stage) ── */
+.split-layout {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+  align-items: stretch;
+}
+
+.split-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.split-left .camera-container {
+  width: 100%;
+  aspect-ratio: 3/4;
+}
+
+.split-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .split-layout {
+    flex-direction: column;
+  }
 }
 
 /* ── Progress bar ── */

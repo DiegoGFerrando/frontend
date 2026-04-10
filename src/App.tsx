@@ -158,55 +158,66 @@ export default function App() {
       </div>
 
       {/* Viewport */}
-      <div className="camera-container">
-        {stage === 'camera' && (
-          <>
-            <video ref={videoRef} autoPlay playsInline muted />
-            <canvas ref={canvasRef} />
-          </>
-        )}
+      {(stage === 'loading' || stage === 'ready') ? (
+        <div className="split-layout">
+          <div className="split-left">
+            <div className="camera-container">
+              <video
+                src="/video.mp4"
+                autoPlay
+                playsInline
+              />
+            </div>
+          </div>
+          <div className="split-right">
+            <div className="email-input-row">
+              <input
+                type="email"
+                className="email-input"
+                placeholder="Ingresá tu email para recibir el resultado"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(null); }}
+              />
+              {stage === 'ready' && error && (
+                <p style={{ color: '#ff5252', margin: '0.25rem 0 0', fontSize: '0.85rem' }}>{error}</p>
+              )}
+            </div>
 
-        {stage === 'preview' && photo && (
-          <img src={photo} alt="Captured" />
-        )}
+            {stage === 'loading' && (
+              <p style={{ color: 'var(--text-muted)' }}>La IA está transformando tu foto...</p>
+            )}
 
-        {(stage === 'loading' || stage === 'ready') && (
-          <video
-            src="/video.mp4"
-            autoPlay
-            playsInline
-          />
-        )}
+            {stage === 'ready' && (
+              <button className="btn btn-primary" onClick={revealResult}>
+                Ver la imagen
+              </button>
+            )}
 
-        {stage === 'result' && resultImage && (
-          resultIsVideo ? (
-            <video src={resultImage} autoPlay loop playsInline controls />
-          ) : (
-            <img src={resultImage} alt="Transformed" />
-          )
-        )}
-      </div>
-
-      {/* Email input */}
-      {(stage === 'loading' || stage === 'ready') && (
-        <div className="email-input-row">
-          <input
-            type="email"
-            className="email-input"
-            placeholder="Ingresá tu email para recibir el resultado"
-            value={email}
-            onChange={(e) => { setEmail(e.target.value); setError(null); }}
-          />
-          {stage === 'ready' && error && (
-            <p style={{ color: '#ff5252', margin: '0.25rem 0 0', fontSize: '0.85rem' }}>{error}</p>
-          )}
+            <div className="progress-bar-container">
+              <div className={`progress-bar-fill ${stage === 'ready' ? 'complete' : ''}`} />
+            </div>
+          </div>
         </div>
-      )}
+      ) : (
+        <div className="camera-container">
+          {stage === 'camera' && (
+            <>
+              <video ref={videoRef} autoPlay playsInline muted />
+              <canvas ref={canvasRef} />
+            </>
+          )}
 
-      {/* Loading bar */}
-      {(stage === 'loading' || stage === 'ready') && (
-        <div className="progress-bar-container">
-          <div className={`progress-bar-fill ${stage === 'ready' ? 'complete' : ''}`} />
+          {stage === 'preview' && photo && (
+            <img src={photo} alt="Captured" />
+          )}
+
+          {stage === 'result' && resultImage && (
+            resultIsVideo ? (
+              <video src={resultImage} autoPlay loop playsInline controls />
+            ) : (
+              <img src={resultImage} alt="Transformed" />
+            )
+          )}
         </div>
       )}
 
@@ -237,16 +248,6 @@ export default function App() {
             <button className="btn btn-primary" onClick={sendPhoto}>Transformar ✨</button>
           </div>
         </>
-      )}
-
-      {stage === 'loading' && (
-        <p style={{ color: 'var(--text-muted)' }}>La IA está transformando tu foto...</p>
-      )}
-
-      {stage === 'ready' && (
-        <button className="btn btn-primary" onClick={revealResult}>
-          Ver la imagen
-        </button>
       )}
 
       {stage === 'result' && (
