@@ -3,15 +3,14 @@ import './App.css';
 
 
 const API_URL = import.meta.env.VITE_API_URL || '';
-const isDev = import.meta.env.MODE === 'development' || import.meta.env.NODE_ENV === 'development';
+const ENABLE_GEN_AI = import.meta.env.VITE_ENABLE_GEN_AI === 'true';
 
 type Stage = 'camera' | 'preview' | 'loading' | 'ready' | 'result' | 'error';
 
 export default function App() {
   // Debug: log environment
-  // Vite exposes import.meta.env.MODE and import.meta.env.NODE_ENV
   // eslint-disable-next-line no-console
-  console.log('NODE_ENV:', import.meta.env.NODE_ENV, 'MODE:', import.meta.env.MODE, 'isDev:', isDev);
+  console.log('VITE_ENABLE_GEN_AI:', import.meta.env.VITE_ENABLE_GEN_AI, 'ENABLE_GEN_AI:', ENABLE_GEN_AI);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -97,7 +96,8 @@ export default function App() {
     setStage('loading');
     setError(null);
 
-    if (isDev) {
+
+    if (!ENABLE_GEN_AI) {
       // Mock: show the original photo, no API call
       setTimeout(() => {
         setResultImagePath(null);
@@ -141,7 +141,8 @@ export default function App() {
     setError(null);
     setStage('result');
 
-    if (isDev) {
+
+    if (!ENABLE_GEN_AI) {
       // Mock: skip email sending
       return;
     }
