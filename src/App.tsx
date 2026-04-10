@@ -8,6 +8,10 @@ const isDev = import.meta.env.MODE === 'development' || import.meta.env.NODE_ENV
 type Stage = 'camera' | 'preview' | 'loading' | 'ready' | 'result' | 'error';
 
 export default function App() {
+  // Debug: log environment
+  // Vite exposes import.meta.env.MODE and import.meta.env.NODE_ENV
+  // eslint-disable-next-line no-console
+  console.log('NODE_ENV:', import.meta.env.NODE_ENV, 'MODE:', import.meta.env.MODE, 'isDev:', isDev);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
