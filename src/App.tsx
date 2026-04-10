@@ -1,7 +1,9 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import './App.css';
 
+
 const API_URL = import.meta.env.VITE_API_URL || '';
+const isDev = import.meta.env.MODE === 'development' || import.meta.env.NODE_ENV === 'development';
 
 type Stage = 'camera' | 'preview' | 'loading' | 'ready' | 'result' | 'error';
 
@@ -85,10 +87,23 @@ export default function App() {
     startCamera();
   }, [startCamera]);
 
+
   const sendPhoto = useCallback(async () => {
     if (!photo) return;
     setStage('loading');
     setError(null);
+
+    if (isDev) {
+      // Mock: show the original photo, no API call
+      setTimeout(() => {
+        setResultImagePath(null);
+        setResultImage(photo);
+        setResultIsVideo(false);
+        setResultText('');
+        setStage('ready');
+      }, 1000);
+      return;
+    }
 
     try {
       const blob = await (await fetch(photo)).blob();
@@ -121,6 +136,11 @@ export default function App() {
     }
     setError(null);
     setStage('result');
+
+    if (isDev) {
+      // Mock: skip email sending
+      return;
+    }
 
     if (email.trim() && resultImagePath) {
       try {
@@ -195,6 +215,14 @@ export default function App() {
 
             <div className="progress-bar-container">
               <div className={`progress-bar-fill ${stage === 'ready' ? 'complete' : ''}`} />
+            </div>
+
+            <div className="loading-spinner-container">
+              {stage === 'ready' ? (
+                <div className="spinner-done">✓</div>
+              ) : (
+                <div className="spinner" />
+              )}
             </div>
           </div>
         </div>
