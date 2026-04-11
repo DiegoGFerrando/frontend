@@ -105,7 +105,7 @@ export default function App() {
         setResultIsVideo(false);
         setResultText('');
         setStage('ready');
-      }, 1000);
+      }, 5000);
       return;
     }
 
@@ -133,9 +133,20 @@ export default function App() {
     }
   }, [photo]);
 
+  // Email validation function
+  function isValidEmail(email: string): boolean {
+    // Simple regex for email validation
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
   const revealResult = useCallback(async () => {
-    if (!email.trim()) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
       setError('Por favor, ingresá tu email antes de continuar.');
+      return;
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      setError('Por favor, ingresá un email válido.');
       return;
     }
     setError(null);
@@ -209,7 +220,7 @@ export default function App() {
             </div>
 
             {stage === 'loading' && (
-              <p style={{ color: 'var(--text-muted)' }}>La IA está transformando tu foto...</p>
+              <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>La IA está transformando tu foto...</p>
             )}
 
             {stage === 'ready' && (
